@@ -106,7 +106,8 @@ impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x> for &'d mut Des
         V: Visitor<'x>,
     {
         if let Ok(val) = self.input.downcast::<JsString, C>(self.cx) {
-            visitor.visit_enum(JsEnumAccess::new(self.cx, val.value(self.cx), None))
+            let key_value = val.value(self.cx);
+            visitor.visit_enum(JsEnumAccess::new(self.cx, key_value, None))
         } else if let Ok(val) = self.input.downcast::<JsObject, C>(self.cx) {
             let prop_names = val.get_own_property_names(self.cx)?;
             let len = prop_names.len(self.cx);
@@ -118,7 +119,8 @@ impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x> for &'d mut Des
             }
             let key = prop_names.get(self.cx, 0)?.downcast::<JsString, C>(self.cx).or_throw(self.cx)?;
             let enum_value = val.get(self.cx, key)?;
-            visitor.visit_enum(JsEnumAccess::new(self.cx, key.value(self.cx), Some(enum_value)))
+            let key_value = key.value(self.cx);
+            visitor.visit_enum(JsEnumAccess::new(self.cx, key_value, Some(enum_value)))
         } else {
             let m = self.input.to_string(self.cx)?.value(self.cx);
             Err(ErrorKind::InvalidKeyType(m))?
@@ -170,10 +172,10 @@ struct JsArrayAccess<'a, 'j, C: Context<'j> + 'a> {
 impl<'a, 'j, C: Context<'j>> JsArrayAccess<'a, 'j, C> {
     fn new(cx: &'a mut C, input: Handle<'j, JsArray>) -> Self {
         JsArrayAccess {
+            len: input.len(cx),
             cx,
             input,
             idx: 0,
-            len: input.len(cx),
         }
     }
 }
