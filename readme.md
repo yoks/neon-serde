@@ -1,8 +1,8 @@
 Neon-serde
 ==========
 
-[![Build Status](https://travis-ci.org/GabrielCastro/neon-serde.svg?branch=master)](https://travis-ci.org/GabrielCastro/neon-serde)
-[![](https://meritbadge.herokuapp.com/neon-serde)](https://crates.io/crates/neon-serde)
+This is a fork of the official neon-serde project. The project became stale and
+stopped following neon releases.
 
 This crate is a utility to easily convert values between
 
