@@ -1,0 +1,121 @@
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+name: CI
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    name: stable / fmt
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
+      - name: cargo fmt --check
+        run: cargo fmt --check
+
+  clippy:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.toolchain }} / clippy
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: cargo clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    runs-on: ubuntu-latest
+    name: rust tests
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: cargo test
+        run: cargo test --all-features --all-targets
+
+  end-to-end:
+    runs-on: ubuntu-latest
+    name: stable / rust tests
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [ 16, 18 ]
+        dir: [ tests, test_macro ]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+
+      - name: ${{ matrix.dir }} / yarn install
+        working-directory: ${{ matrix.dir }}
+        run: yarn install
+
+      - name: ${{ matrix.dir }} / yarn test
+        working-directory: ${{ matrix.dir }}
+        run: yarn test
+
+  doc:
+    runs-on: ubuntu-latest
+    name: nightly / doc
+    needs:
+      - test
+      - end-to-end
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install nightly
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: cargo doc
+        run: cargo doc --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: --cfg docs
+
+      - name: Fix for GitHub Pages
+        run: echo "<meta http-equiv=\"refresh\" content=\"0; url=neon_serde\">" > target/doc/index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: 'target/doc'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
