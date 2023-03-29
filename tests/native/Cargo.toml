@@ -1,5 +1,5 @@
 [package]
-name = "test"
+name = "tests"
 version = "0.1.0"
 authors = ["Gabriel Castro <dev@GabrielCastro.ca>"]
 license = "MIT"
@@ -20,11 +20,3 @@ serde_bytes = "0.11.9"
 version = "0.10"
 default-features = false
 features = ["napi-6"]
-
-[profile.dev]
-codegen-units = 4
-lto = false
-
-[profile.release]
-codegen-units = 4
-lto = false

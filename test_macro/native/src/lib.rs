@@ -1,12 +1,6 @@
-#[macro_use]
-extern crate neon;
-#[macro_use]
-extern crate neon_serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_bytes;
-
-#[derive(Deserialize)]
+use neon_serde::export;
+use neon::prelude::*;
+#[derive(serde::Deserialize)]
 struct User {
     name: String,
     age: u16,

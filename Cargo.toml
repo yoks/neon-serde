@@ -11,18 +11,21 @@ repository = "https://github.com/matrix-org/neon-serde"
 readme = "readme.md"
 edition = "2021"
 
+[lib]
+name = "neon_serde"
+
 [dependencies]
 serde = "1.0"
 thiserror = "1.0.40"
+num = { version = "0.4.0", default-features = false }
 
 [dependencies.neon]
 version = "0.10.1"
 default-features = false
 features = ["default-panic-hook", "napi-6", "try-catch-api", "event-queue-api"]
 
-[dependencies.num]
-version = "0.4.0"
-default-features = false
-
 [dev-dependencies]
-serde_derive = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+
+[workspace]
+members = ["test_macro/native", "tests/native"]

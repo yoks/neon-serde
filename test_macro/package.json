@@ -1,5 +1,5 @@
 {
-  "name": "test",
+  "name": "test_macro",
   "version": "0.1.0",
   "description": "",
   "main": "lib/index.js",
@@ -7,8 +7,8 @@
   "license": "MIT",
   "devDependencies": {
     "expect": "^24.9.0",
-    "mocha": "^6.2.3",
-    "neon-cli": "^0.7.0"
+    "mocha": "^6.2.1",
+    "neon-cli": "^0.10.0"
   },
   "scripts": {
     "build": "neon build --release",

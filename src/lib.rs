@@ -5,7 +5,6 @@
 #![deny(clippy_pedantic)]
 #![allow(stutter)]
 #![recursion_limit = "128"]
-
 //!
 //! Neon-serde
 //! ==========
@@ -29,11 +28,7 @@
 //! ## Example
 //!
 //! ```rust,no_run
-//! # #![allow(dead_code)]
-//! extern crate neon_serde;
-//! extern crate neon;
-//! #[macro_use]
-//! extern crate serde_derive;
+//! use serde::{Deserialize, Serialize};
 //!
 //! use neon::prelude::*;
 //!
@@ -73,6 +68,7 @@
 //!
 //! ```
 //!
+
 
 extern crate neon;
 extern crate num;

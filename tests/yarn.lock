@@ -1195,10 +1195,10 @@ neo-async@^2.6.0:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
 
-neon-cli@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/neon-cli/-/neon-cli-0.7.0.tgz#d89c8141de247cf3b1f48e527b8a7a17825770df"
-  integrity sha512-irFl3A9/10AWqGOi8UkjMYXyjSzWs3znDPXk0VXHuWn5ef3+yKHqg37ylDOILkr27DrK4ldNXFvxNIw9KI5AZA==
+neon-cli@^0.10.0:
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/neon-cli/-/neon-cli-0.10.1.tgz#9705b7b860550faffe6344fc9ab6f6e389c95ed6"
+  integrity sha512-kOd9ELaYETe1J1nBEOYD7koAZVj6xR9TGwOPccAsWmwL5amkaXXXwXHCUHkBAWujlgSZY5f2pT+pFGkzoHExYQ==
   dependencies:
     chalk "^4.1.0"
     command-line-args "^5.1.1"
