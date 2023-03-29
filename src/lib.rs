@@ -1,11 +1,3 @@
-#![allow(unknown_lints)]
-#![deny(unused_variables)]
-#![deny(unused_mut)]
-#![deny(clippy)]
-#![deny(clippy_pedantic)]
-#![allow(stutter)]
-#![recursion_limit = "128"]
-//!
 //! Neon-serde
 //! ==========
 //!
@@ -28,9 +20,8 @@
 //! ## Example
 //!
 //! ```rust,no_run
-//! use serde::{Deserialize, Serialize};
-//!
 //! use neon::prelude::*;
+//! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Serialize, Debug, Deserialize)]
 //! struct AnObject {
@@ -42,7 +33,7 @@
 //! fn deserialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
 //!     let arg0 = cx.argument::<JsValue>(0)?;
 //!
-//!     let arg0_value :AnObject = neon_serde::from_value(&mut cx, arg0)
+//!     let arg0_value: AnObject = neon_serde::from_value(&mut cx, arg0)
 //!         .or_else(|e| cx.throw_error(e.to_string()))
 //!         .unwrap();
 //!     println!("{:?}", arg0_value);
@@ -54,7 +45,7 @@
 //!     let value = AnObject {
 //!         a: 1,
 //!         b: vec![2f64, 3f64, 4f64],
-//!         c: "a string".into()
+//!         c: "a string".into(),
 //!     };
 //!
 //!     let js_value = neon_serde::to_value(&mut cx, &value)
@@ -65,10 +56,7 @@
 //!
 //! # fn main () {
 //! # }
-//!
 //! ```
-//!
-
 
 extern crate neon;
 extern crate num;
@@ -81,14 +69,14 @@ pub mod ser;
 
 mod macros;
 
-pub use de::from_value;
-pub use de::from_value_opt;
+pub use de::{from_value, from_value_opt};
 pub use ser::to_value;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use neon::prelude::*;
+
+    use super::*;
 
     #[test]
     fn test_it_compiles() {

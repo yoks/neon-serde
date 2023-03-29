@@ -1,19 +1,18 @@
-//!
 //! Serialize a Rust data structure into a `JsValue`
-//!
 
-use crate::errors::Error;
-use crate::errors::Result as LibResult;
-use neon::prelude::*;
-use serde::ser::{self, Serialize};
 use std::marker::PhantomData;
+
+use neon::prelude::*;
 use neon::types::buffer::TypedArray;
 use num;
+use serde::ser::{self, Serialize};
+
+use crate::errors::{Error, Result as LibResult};
 
 fn as_num<T: num::cast::NumCast, OutT: num::cast::NumCast>(n: T) -> LibResult<OutT> {
     match num::cast::<T, OutT>(n) {
         Some(n2) => Ok(n2),
-        None => Err(Error::CastError)
+        None => Err(Error::CastError),
     }
 }
 
@@ -23,7 +22,6 @@ fn as_num<T: num::cast::NumCast, OutT: num::cast::NumCast>(n: T) -> LibResult<Ou
 ///
 /// * `NumberCastError` trying to serialize a `u64` can fail if it overflows in a cast to `f64`
 /// * `StringTooLong` if the string exceeds v8's max string size
-///
 #[inline]
 pub fn to_value<'j, C, V>(cx: &mut C, value: &V) -> LibResult<Handle<'j, JsValue>>
 where
@@ -98,16 +96,15 @@ impl<'a, 'j, C> ser::Serializer for Serializer<'a, 'j, C>
 where
     C: Context<'j>,
 {
-    type Ok = Handle<'j, JsValue>;
     type Error = Error;
-
+    type Ok = Handle<'j, JsValue>;
+    type SerializeMap = MapSerializer<'a, 'j, C>;
     type SerializeSeq = ArraySerializer<'a, 'j, C>;
+    type SerializeStruct = StructSerializer<'a, 'j, C>;
+    type SerializeStructVariant = StructVariantSerializer<'a, 'j, C>;
     type SerializeTuple = ArraySerializer<'a, 'j, C>;
     type SerializeTupleStruct = ArraySerializer<'a, 'j, C>;
     type SerializeTupleVariant = TupleVariantSerializer<'a, 'j, C>;
-    type SerializeMap = MapSerializer<'a, 'j, C>;
-    type SerializeStruct = StructSerializer<'a, 'j, C>;
-    type SerializeStructVariant = StructVariantSerializer<'a, 'j, C>;
 
     #[inline]
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
@@ -138,7 +135,6 @@ where
     fn serialize_i128(self, v: i128) -> Result<Self::Ok, Self::Error> {
         Ok(JsNumber::new(self.cx, as_num::<_, f64>(v)?).upcast())
     }
-
 
     #[inline]
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
@@ -178,8 +174,8 @@ where
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
         let mut b = [0; 4];
         let result = v.encode_utf8(&mut b);
-        let js_str = JsString::try_new(self.cx, result)
-            .map_err(|_| Error::StringTooLongForChar(4))?;
+        let js_str =
+            JsString::try_new(self.cx, result).map_err(|_| Error::StringTooLongForChar(4))?;
         Ok(js_str.upcast())
     }
 
@@ -333,8 +329,8 @@ impl<'a, 'j, C> ser::SerializeSeq for ArraySerializer<'a, 'j, C>
 where
     C: Context<'j>,
 {
-    type Ok = Handle<'j, JsValue>;
     type Error = Error;
+    type Ok = Handle<'j, JsValue>;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
     where
@@ -358,8 +354,8 @@ impl<'a, 'j, C> ser::SerializeTuple for ArraySerializer<'a, 'j, C>
 where
     C: Context<'j>,
 {
-    type Ok = Handle<'j, JsValue>;
     type Error = Error;
+    type Ok = Handle<'j, JsValue>;
 
     #[inline]
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
@@ -380,8 +376,8 @@ impl<'a, 'j, C> ser::SerializeTupleStruct for ArraySerializer<'a, 'j, C>
 where
     C: Context<'j>,
 {
-    type Ok = Handle<'j, JsValue>;
     type Error = Error;
+    type Ok = Handle<'j, JsValue>;
 
     #[inline]
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
@@ -421,8 +417,8 @@ impl<'a, 'j, C> ser::SerializeTupleVariant for TupleVariantSerializer<'a, 'j, C>
 where
     C: Context<'j>,
 {
-    type Ok = Handle<'j, JsValue>;
     type Error = Error;
+    type Ok = Handle<'j, JsValue>;
 
     #[inline]
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
@@ -460,8 +456,8 @@ impl<'a, 'j, C> ser::SerializeMap for MapSerializer<'a, 'j, C>
 where
     C: Context<'j>,
 {
-    type Ok = Handle<'j, JsValue>;
     type Error = Error;
+    type Ok = Handle<'j, JsValue>;
 
     fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error>
     where
@@ -505,8 +501,8 @@ impl<'a, 'j, C> ser::SerializeStruct for StructSerializer<'a, 'j, C>
 where
     C: Context<'j>,
 {
-    type Ok = Handle<'j, JsValue>;
     type Error = Error;
+    type Ok = Handle<'j, JsValue>;
 
     #[inline]
     fn serialize_field<T: ?Sized>(
@@ -552,8 +548,8 @@ impl<'a, 'j, C> ser::SerializeStructVariant for StructVariantSerializer<'a, 'j, 
 where
     C: Context<'j>,
 {
-    type Ok = Handle<'j, JsValue>;
     type Error = Error;
+    type Ok = Handle<'j, JsValue>;
 
     #[inline]
     fn serialize_field<T: ?Sized>(

@@ -1,5 +1,5 @@
 use neon::prelude::*;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug, Deserialize)]
 struct AnObject {
@@ -114,7 +114,7 @@ macro_rules! make_expect {
                 Ok(value) => value,
                 // errors _must_ propagate
                 Err(neon_serde::errors::Error::Js(err)) => return Err(err),
-                Err(e) => return cx.throw_error(e.to_string())
+                Err(e) => return cx.throw_error(e.to_string()),
             };
             assert_eq!(value, de_serialized);
             Ok(JsUndefined::new(&mut cx).upcast())

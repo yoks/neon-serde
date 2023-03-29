@@ -1,10 +1,11 @@
 //! Defines error handling types used by the create
 //! uses the `error-chain` create for generation
 
-use neon;
-use serde::{de, ser};
 use std::convert::From;
 use std::fmt::Display;
+
+use neon;
+use serde::{de, ser};
 use thiserror::Error as ThisError;
 
 #[derive(Debug, ThisError)]
@@ -43,9 +44,8 @@ pub enum Error {
     #[error("CastError")]
     CastError,
     #[error("{0}")]
-    Msg(String)
+    Msg(String),
 }
-
 
 impl ser::Error for Error {
     fn custom<T: Display>(msg: T) -> Self {

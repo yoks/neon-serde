@@ -1,23 +1,21 @@
-//!
 //! Deserialize a `JsValue` into a Rust data structure
-//!
 
-use crate::errors::Error as LibError;
-use crate::errors::Result as LibResult;
 use neon::prelude::*;
 use neon::types::buffer::TypedArray;
 use serde;
-use serde::de::Visitor;
-use serde::de::{DeserializeOwned, DeserializeSeed, EnumAccess, MapAccess, SeqAccess, Unexpected,
-                VariantAccess};
+use serde::de::{
+    DeserializeOwned, DeserializeSeed, EnumAccess, MapAccess, SeqAccess, Unexpected, VariantAccess,
+    Visitor,
+};
+
 use crate::bail;
+use crate::errors::{Error as LibError, Result as LibResult};
 
 /// Deserialize an instance of type `T` from a `Handle<JsValue>`
 ///
 /// # Errors
 ///
 /// Can fail for various reasons see `LibError`
-///
 pub fn from_value<'j, C, T>(cx: &mut C, value: Handle<'j, JsValue>) -> LibResult<T>
 where
     C: Context<'j>,
@@ -51,14 +49,25 @@ impl<'a, 'j, C: Context<'j>> Deserializer<'a, 'j, C> {
 }
 
 #[doc(hidden)]
-impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x> for &'d mut Deserializer<'a, 'j, C> {
+impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x>
+    for &'d mut Deserializer<'a, 'j, C>
+{
     type Error = LibError;
+
+    forward_to_deserialize_any! {
+       <V: Visitor<'x>>
+        bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char str string
+        unit unit_struct seq tuple tuple_struct map struct identifier
+        newtype_struct
+    }
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'x>,
     {
-        if self.input.downcast::<JsNull, C>(self.cx).is_ok() || self.input.downcast::<JsUndefined, C>(self.cx).is_ok() {
+        if self.input.downcast::<JsNull, C>(self.cx).is_ok()
+            || self.input.downcast::<JsUndefined, C>(self.cx).is_ok()
+        {
             visitor.visit_unit()
         } else if let Ok(val) = self.input.downcast::<JsBoolean, C>(self.cx) {
             visitor.visit_bool(val.value(self.cx))
@@ -90,16 +99,22 @@ impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x> for &'d mut Des
     where
         V: Visitor<'x>,
     {
-        let buff = self.input.downcast::<JsBuffer, _>(self.cx).or_throw(self.cx)?;
+        let buff = self
+            .input
+            .downcast::<JsBuffer, _>(self.cx)
+            .or_throw(self.cx)?;
         let slice = buff.as_slice(self.cx);
-        visitor.visit_bytes(&slice)
+        visitor.visit_bytes(slice)
     }
 
     fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'x>,
     {
-        let buff = self.input.downcast::<JsBuffer, _>(self.cx).or_throw(self.cx)?;
+        let buff = self
+            .input
+            .downcast::<JsBuffer, _>(self.cx)
+            .or_throw(self.cx)?;
         visitor.visit_byte_buf(buff.as_slice(self.cx).to_vec())
     }
 
@@ -107,7 +122,9 @@ impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x> for &'d mut Des
     where
         V: Visitor<'x>,
     {
-        if self.input.downcast::<JsNull, C>(self.cx).is_ok() || self.input.downcast::<JsUndefined, C>(self.cx).is_ok() {
+        if self.input.downcast::<JsNull, C>(self.cx).is_ok()
+            || self.input.downcast::<JsUndefined, C>(self.cx).is_ok()
+        {
             visitor.visit_none()
         } else {
             visitor.visit_some(self)
@@ -130,10 +147,7 @@ impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x> for &'d mut Des
             let prop_names = val.get_own_property_names(self.cx)?;
             let len = prop_names.len(self.cx);
             if len != 1 {
-                Err(LibError::InvalidKeyType(format!(
-                    "object key with {} properties",
-                    len
-                )))?
+                return Err(LibError::InvalidKeyType(format!("object key with {len} properties")))?
             }
             let key = prop_names.get::<JsString, _, _>(self.cx, 0)?;
             let enum_value = val.get(self.cx, key)?;
@@ -150,13 +164,6 @@ impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x> for &'d mut Des
         V: Visitor<'x>,
     {
         visitor.visit_unit()
-    }
-
-    forward_to_deserialize_any! {
-       <V: Visitor<'x>>
-        bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char str string
-        unit unit_struct seq tuple tuple_struct map struct identifier
-        newtype_struct
     }
 }
 
@@ -209,7 +216,7 @@ struct JsObjectAccess<'a, 'j, C: Context<'j> + 'a> {
 }
 
 #[doc(hidden)]
-impl<'x, 'a, 'j, C: Context<'j>> JsObjectAccess<'a, 'j, C> {
+impl<'a, 'j, C: Context<'j>> JsObjectAccess<'a, 'j, C> {
     fn new(cx: &'a mut C, input: Handle<'j, JsObject>) -> LibResult<Self> {
         let prop_names = input.get_own_property_names(cx)?;
         let len = prop_names.len(cx);
@@ -351,7 +358,7 @@ impl<'x, 'a, 'j, C: Context<'j>> VariantAccess<'x> for JsVariantAccess<'a, 'j, C
                         &"tuple variant",
                     ))
                 }
-            },
+            }
             None => Err(serde::de::Error::invalid_type(
                 Unexpected::UnitVariant,
                 &"tuple variant",
@@ -378,7 +385,7 @@ impl<'x, 'a, 'j, C: Context<'j>> VariantAccess<'x> for JsVariantAccess<'a, 'j, C
                         &"struct variant",
                     ))
                 }
-            },
+            }
             _ => Err(serde::de::Error::invalid_type(
                 Unexpected::UnitVariant,
                 &"struct variant",
