@@ -1,5 +1,6 @@
 use neon_serde::export;
-use neon::prelude::*;
+use neon::register_module;
+
 #[derive(serde::Deserialize)]
 struct User {
     name: String,
