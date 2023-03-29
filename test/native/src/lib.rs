@@ -1,10 +1,5 @@
-extern crate neon;
-extern crate neon_serde;
-extern crate serde_bytes;
-#[macro_use]
-extern crate serde_derive;
-
 use neon::prelude::*;
+use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Debug, Deserialize)]
 struct AnObject {
@@ -117,12 +112,12 @@ macro_rules! make_expect {
 
             let de_serialized: $val_type = match neon_serde::from_value(&mut cx, arg0) {
                 Ok(value) => value,
-                Err(e) => {
-                    return cx.throw_error(e.to_string());
-                }
+                // errors _must_ propagate
+                Err(neon_serde::errors::Error::Js(err)) => return Err(err),
+                Err(e) => return cx.throw_error(e.to_string())
             };
             assert_eq!(value, de_serialized);
-            Ok(JsUndefined::new().upcast())
+            Ok(JsUndefined::new(&mut cx).upcast())
         }
     };
 }

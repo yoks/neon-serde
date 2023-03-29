@@ -159,15 +159,14 @@ describe('throwing functions', () => {
             a: 1,
             b: [1,3]
         };
-        for (const ch of 'cdefghijklmo') {
-            Object.defineProperty(obj, ch, {
-                enumerable: true,
-                configurable: false,
-                get() {
-                    throw new Error('Hi There prop ' + ch);
-                }
-            })
-        }
+        Object.defineProperty(obj, 'c', {
+            enumerable: true,
+            configurable: false,
+            get() {
+                throw new Error('JS exception');
+            }
+        })
+
         expect(() => native.expect_obj(obj))
             .toThrow('JS exception');
     })

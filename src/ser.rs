@@ -2,18 +2,18 @@
 //! Serialize a Rust data structure into a `JsValue`
 //!
 
-use errors::Error;
-use errors::ErrorKind;
-use errors::Result as LibResult;
+use crate::errors::Error;
+use crate::errors::Result as LibResult;
 use neon::prelude::*;
 use serde::ser::{self, Serialize};
 use std::marker::PhantomData;
+use neon::types::buffer::TypedArray;
 use num;
 
 fn as_num<T: num::cast::NumCast, OutT: num::cast::NumCast>(n: T) -> LibResult<OutT> {
     match num::cast::<T, OutT>(n) {
         Some(n2) => Ok(n2),
-        None => bail!(ErrorKind::CastError)
+        None => Err(Error::CastError)
     }
 }
 
@@ -179,21 +179,21 @@ where
         let mut b = [0; 4];
         let result = v.encode_utf8(&mut b);
         let js_str = JsString::try_new(self.cx, result)
-            .map_err(|_| ErrorKind::StringTooLongForChar(4))?;
+            .map_err(|_| Error::StringTooLongForChar(4))?;
         Ok(js_str.upcast())
     }
 
     #[inline]
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
         let len = v.len();
-        let js_str = JsString::try_new(self.cx, v).map_err(|_| ErrorKind::StringTooLong(len))?;
+        let js_str = JsString::try_new(self.cx, v).map_err(|_| Error::StringTooLong(len))?;
         Ok(js_str.upcast())
     }
 
     #[inline]
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        let mut buff = JsBuffer::new(self.cx, as_num::<_, u32>(v.len())?)?;
-        self.cx.borrow_mut(&mut buff, |buff| buff.as_mut_slice().clone_from_slice(v));
+        let mut buff = JsBuffer::new(self.cx, as_num::<_, usize>(v.len())?)?;
+        buff.as_mut_slice(self.cx).clone_from_slice(v);
         Ok(buff.upcast())
     }
 
