@@ -75,7 +75,7 @@ make_test!(make_map, {
 });
 
 make_test!(make_object, {
-    let value = AnObjectTwo {
+    AnObjectTwo {
         a: 1,
         b: vec![1, 2],
         c: "abc".into(),
@@ -96,11 +96,10 @@ make_test!(make_object, {
         p: vec![1., 2., 3.5],
         q: 999,
         r: 333,
-    };
-    value
+    }
 });
 
-const NUMBER_BYTES: &'static [u8] = &[255u8, 254, 253];
+const NUMBER_BYTES: &[u8] = &[255u8, 254, 253];
 
 make_test!(make_buff, { serde_bytes::Bytes::new(NUMBER_BYTES) });
 
@@ -162,12 +161,40 @@ make_expect!(
 fn roundtrip_object(mut cx: FunctionContext) -> JsResult<JsValue> {
     let arg0 = cx.argument::<JsValue>(0)?;
 
-    let de_serialized: AnObjectTwo = neon_serde::from_value(&mut cx, arg0)
-        .or_else(|e| cx.throw_error(e.to_string()))
-        .unwrap();
-    let handle = neon_serde::to_value(&mut cx, &de_serialized)
-        .or_else(|e| cx.throw_error(e.to_string()))
-        .unwrap();
+    let de_serialized: AnObjectTwo =
+        neon_serde::from_value(&mut cx, arg0).or_else(|e| cx.throw_error(e.to_string()))?;
+
+    let handle =
+        neon_serde::to_value(&mut cx, &de_serialized).or_else(|e| cx.throw_error(e.to_string()))?;
+
+    Ok(handle)
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct RoundtripWithDates {
+    date2: neon_serde::dates::JsDate,
+}
+fn roundtrip_with_dates(mut cx: FunctionContext) -> JsResult<JsValue> {
+    let arg0 = cx.argument::<JsValue>(0)?;
+
+    let de_serialized: RoundtripWithDates =
+        neon_serde::from_value(&mut cx, arg0).or_else(|e| cx.throw_error(e.to_string()))?;
+
+    let handle =
+        neon_serde::to_value(&mut cx, &de_serialized).or_else(|e| cx.throw_error(e.to_string()))?;
+
+    Ok(handle)
+}
+
+fn roundtrip_serde_json_value(mut cx: FunctionContext) -> JsResult<JsValue> {
+    let arg0 = cx.argument::<JsValue>(0)?;
+
+    let de_serialized: serde_json::Value =
+        neon_serde::from_value(&mut cx, arg0).or_else(|e| cx.throw_error(e.to_string()))?;
+
+    let handle =
+        neon_serde::to_value(&mut cx, &de_serialized).or_else(|e| cx.throw_error(e.to_string()))?;
+
     Ok(handle)
 }
 
@@ -187,5 +214,7 @@ register_module!(mut m, {
     m.export_function("expect_buffer", expect_buffer)?;
 
     m.export_function("roundtrip_object", roundtrip_object)?;
+    m.export_function("roundtrip_serde_json_value", roundtrip_serde_json_value)?;
+    m.export_function("roundtrip_with_dates", roundtrip_with_dates)?;
     Ok(())
 });
