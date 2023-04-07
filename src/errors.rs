@@ -58,9 +58,9 @@ impl Error {
     pub fn throw<'c, C: Context<'c>>(self, mut cx: C) -> neon::result::Throw {
         match self {
             Error::Js(throw) => throw,
-            err => {
-                cx.throw_error::<_, ()>(err.to_string()).expect_err("throw_error always returns Throw")
-            }
+            err => cx
+                .throw_error::<_, ()>(err.to_string())
+                .expect_err("throw_error always returns Throw"),
         }
     }
 }

@@ -25,8 +25,9 @@ Convert a value implementing `serde::Serialize` to a `Handle<JsValue>`
 The export! macro allows you to quickly define functions automatically convert thier arguments
 
 ```rust
-use serde::Deserialize;
+use neon::prelude::*;
 use neon_serde::export;
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct User {
