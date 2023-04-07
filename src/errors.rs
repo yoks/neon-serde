@@ -5,6 +5,7 @@ use std::convert::From;
 use std::fmt::Display;
 
 use neon;
+use neon::context::Context;
 use serde::{de, ser};
 use thiserror::Error as ThisError;
 
@@ -48,6 +49,20 @@ pub enum Error {
     CastError,
     #[error("{0}")]
     Msg(String),
+}
+
+impl Error {
+    /// Throw the error for JS
+    ///
+    /// See the [top-level documentation](crate) for examples on how to use this.
+    pub fn throw<'c, C: Context<'c>>(self, mut cx: C) -> neon::result::Throw {
+        match self {
+            Error::Js(throw) => throw,
+            err => {
+                cx.throw_error::<_, ()>(err.to_string()).expect_err("throw_error always returns Throw")
+            }
+        }
+    }
 }
 
 impl ser::Error for Error {

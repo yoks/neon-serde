@@ -1,41 +1,32 @@
-Neon-serde
-==========
-
-This is a fork of the official neon-serde project. The project became stale and
-stopped following neon releases.
+# neon-serde
 
 This crate is a utility to easily convert values between
 
 A `Handle<JsValue>` from the [neon](https://github.com/neon-bindings/neon) crate
 and any value implementing `serde::{Serialize, Deserialize}`
 
+This is a fork of [katyo/neon-serde](https://github.com/katyo/neon-serde) project.
+
 ## Versions support
 
-neon-serde is tested on node
-`8` `10` `12`
+neon-serde is tested on node `16` and `18`
 
 ## Usage
 
 #### `neon_serde::from_value`
-Convert a `Handle<js::JsValue>` to
-a type implementing `serde::Deserialize`
 
-#### `neon_serde::to_value`˚
-Convert a value implementing `serde::Serialize` to
-a `Handle<JsValue>`
+Convert a `Handle<JsValue>` to a type implementing `serde::Deserialize`
+
+#### `neon_serde::to_value`
+Convert a value implementing `serde::Serialize` to a `Handle<JsValue>`
 
 ## Export Macro example
+
 The export! macro allows you to quickly define functions automatically convert thier arguments
 
-```rust,no_run
-
-#[macro_use]
-extern crate neon;
-#[macro_use]
-extern crate neon_serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_bytes;
+```rust
+use serde::Deserialize;
+use neon_serde::export;
 
 #[derive(Deserialize)]
 struct User {
@@ -90,18 +81,13 @@ export! {
         }
     }
 }
-
 ```
 
 
 ## Direct Usage Example
 
-```rust,no_run
-extern crate neon_serde;
-extern crate neon;
-#[macro_use]
-extern crate serde_derive;
-
+```rust
+use serde::{Serialize, Deserialize};
 use neon::prelude::*;
 
 #[derive(Serialize, Debug, Deserialize)]
@@ -116,13 +102,11 @@ fn deserialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
 
     let arg0_value: AnObject = match neon_serde::from_value(&mut cx, arg0) {
         Ok(value) => value,
-        Err(e) => {
-            return cx.throw_error(e.to_string());
-        }
+        Err(e) => return Err(e.throw(cx))
     };
     println!("{:?}", arg0_value);
 
-    Ok(JsUndefined::new().upcast())
+    Ok(JsUndefined::new(&mut cx).upcast())
 }
 
 fn serialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
@@ -133,7 +117,7 @@ fn serialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
     };
 
     neon_serde::to_value(&mut cx, &value)
-        .or_else(|e| cx.throw_error(e.to_string()))
+        .or_else(|e| Err(e.throw(cx)))
 }
 ```
 

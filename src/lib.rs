@@ -1,8 +1,5 @@
 #![doc = include_str!("../readme.md")]
 
-#[macro_use]
-extern crate serde;
-
 pub mod de;
 pub mod errors;
 pub mod ser;

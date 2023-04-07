@@ -53,6 +53,9 @@ jobs:
       - name: cargo test
         run: cargo test --all-features --all-targets
 
+      - name: cargo test --doc
+        run: cargo test --doc
+
   node-tests:
     runs-on: ubuntu-latest
     name: node tests
