@@ -22,9 +22,9 @@ num = { version = "0.4.0", default-features = false }
 chrono = { version = "0.4.24", features = ["serde"], optional = true }
 
 [dependencies.neon]
-version = "0.10.1"
+version = "1.0.0-alpha.2"
 default-features = false
-features = ["default-panic-hook", "napi-6", "try-catch-api", "event-queue-api"]
+features = ["napi-6", "try-catch-api", "event-queue-api"]
 
 [dev-dependencies]
 serde = { version = "1.0", features = ["derive"] }
